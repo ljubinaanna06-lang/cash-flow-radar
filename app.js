@@ -33,6 +33,12 @@ for(let month=0;month<6;month++){
  }
  ops.push({id:"TAX-"+ym,kind:"out",date:previousWeekday(ym+"-12"),amount:215000,name:"Налоги и взносы",party:"Бюджет",mandatory:true,category:"Налоги"});
 }
+// Ежемесячные командировочные расходы выездных ремонтных бригад (демо).
+// Одна операция на месяц, без детализации по статьям и объектам.
+for(let month=0;month<6;month++){
+ const ym=new Date(Date.UTC(2026,11+month,1)).toISOString().slice(0,7);
+ ops.push({id:"TRAVEL-"+ym,kind:"out",date:previousWeekday(ym+"-10"),amount:350000,name:"Командировочные расходы",party:"Выездные бригады",mandatory:true,category:"Командировочные расходы"});
+}
 // Исключаем точные дубли в демонстрационных операциях до расчёта остатков.
 const seenOps=new Set();
 for(let i=ops.length-1;i>=0;i--){const o=ops[i],key=[o.kind,o.date,o.name,o.party,o.amount].join("|");if(seenOps.has(key))ops.splice(i,1);else seenOps.add(key)}
