@@ -23,7 +23,7 @@ else if(type===6){name="Субподрядные работы";party=suppliers[i
 else if(type===7){name="Логистика";party=suppliers[5];amount=85000;category="Логистика";mandatory=false}
 else{name="Административные расходы";party="Администрация";amount=70000;category="Административные";mandatory=false}
 ops.push({id:"E"+i,kind:"out",date:day,amount,name,party,mandatory,category})}
-let days=90,page="overview",filter="all",scenario={receipt:contracts.find(c=>c.due>=START).id,receiptShift:0,expense:ops.find(o=>o.kind==="out"&&!o.mandatory).id,expenseShift:0,saving:0};
+let days=90,page="overview",filter="all",scenario={receipt:"D4",receiptShift:0,expense:ops.find(o=>o.kind==="out"&&!o.mandatory).id,expenseShift:0,saving:0};
 const $=id=>document.getElementById(id);
 function currentOps(sc=false){return ops.map(o=>{if(!sc)return o;let date=o.date,amount=o.amount;if(o.kind==="in"&&o.contract===scenario.receipt)date=add(date,scenario.receiptShift);if(o.kind==="out"&&o.id===scenario.expense)date=add(date,scenario.expenseShift);if(o.kind==="out"&&!o.mandatory)amount=Math.round(amount*(1-scenario.saving/100));return {...o,date,amount}})}
 function calc(n,sc=false){const endDate=add(START,n-1),selected=currentOps(sc).filter(o=>o.date>=START&&o.date<=endDate),byDate=new Map();for(const o of selected){if(!byDate.has(o.date))byDate.set(o.date,[]);byDate.get(o.date).push(o)}
@@ -39,7 +39,7 @@ function render(){document.querySelectorAll(".page").forEach(el=>el.classList.to
 $("receipt").innerHTML=contracts.map(c=>'<option value="'+c.id+'">'+safe(c.id+" · "+c.customer+" · "+money(c.amount))+'</option>').join("");$("expense").innerHTML=ops.filter(o=>o.kind==="out"&&!o.mandatory).map(o=>'<option value="'+o.id+'">'+fmt(o.date)+" · "+safe(o.name)+" · "+money(o.amount)+'</option>').join("");$("receipt").value=scenario.receipt;$("expense").value=scenario.expense;
 document.querySelectorAll("#nav button").forEach(b=>b.onclick=()=>{page=b.dataset.page;render()});document.querySelectorAll("#horizon button").forEach(b=>b.onclick=()=>{days=+b.dataset.days;render()});$("calFilter").onchange=e=>{filter=e.target.value;calendar()};
 for(const [id,key] of [["receipt","receipt"],["expense","expense"],["receiptShift","receiptShift"],["expenseShift","expenseShift"],["saving","saving"]])$(id).oninput=e=>{scenario[key]=["receiptShift","expenseShift","saving"].includes(key)?+e.target.value:e.target.value;render()};
-$("reset").onclick=()=>{scenario={receipt:contracts.find(c=>c.due>=START).id,receiptShift:0,expense:ops.find(o=>o.kind==="out"&&!o.mandatory).id,expenseShift:0,saving:0};for(const key of Object.keys(scenario))$(key).value=scenario[key];render()};
+$("reset").onclick=()=>{scenario={receipt:"D4",receiptShift:0,expense:ops.find(o=>o.kind==="out"&&!o.mandatory).id,expenseShift:0,saving:0};for(const key of Object.keys(scenario))$(key).value=scenario[key];$("receipt").selectedIndex=contracts.findIndex(c=>c.id==="D4");render()};
 for(const n of [30,90,180]){const a=calc(n);if(a.end!==OPENING+a.inflow-a.outflow||a.min!==Math.min(...a.series.map(x=>x.balance)))throw Error("Нарушена сверка денежных потоков")}
 render();
 })();
