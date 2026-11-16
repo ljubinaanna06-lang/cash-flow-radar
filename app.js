@@ -13,9 +13,8 @@ contracts.forEach(c=>ops.push({id:"R"+c.id,kind:"in",date:c.due,amount:c.amount,
 const suppliers=["ООО «МеталлКомплект»","АО «ПромПодшипник»","ООО «РемСнаб»","ООО «СпецИнструмент»","АО «ТехСервис»","ООО «ПромЛогистика»"];
 for(let i=0;i<90;i++){const offset=(i*7+Math.floor(i/6)*3)%180,day=add(START,offset),type=i%9;
 let name,party,amount,mandatory=true,category;
-if(type===0){name="Заработная плата";party="Сотрудники";amount=420000;category="Персонал"}
-else if(type===1){name="Налоги и взносы";party="Бюджет";amount=215000;category="Налоги"}
-else if(type===2){name="Погашение кредита";party="Банк";amount=340000;category="Кредиты"}
+if(type===0||type===1)continue;
+if(type===2){name="Погашение кредита";party="Банк";amount=340000;category="Кредиты"}
 else if(type===3){name="Проценты по кредиту";party="Банк";amount=118000;category="Кредиты"}
 else if(type===4){name="Материалы для ремонта";party=suppliers[i%6];amount=350000+(i%4)*65000;category="Материалы"}
 else if(type===5){name="Комплектующие";party=suppliers[i%6];amount=260000+(i%3)*70000;category="Материалы"}
@@ -23,6 +22,20 @@ else if(type===6){name="Субподрядные работы";party=suppliers[i
 else if(type===7){name="Логистика";party=suppliers[5];amount=85000;category="Логистика";mandatory=false}
 else{name="Административные расходы";party="Администрация";amount=70000;category="Административные";mandatory=false}
 ops.push({id:"E"+i,kind:"out",date:day,amount,name,party,mandatory,category})}
+// Регулярные платежи демонстрационной модели: зарплата дважды в месяц,
+// налоги один раз в месяц. Даты условные и не заменяют налоговый календарь.
+const previousWeekday=date=>{let d=date;while([0,6].includes(new Date(d+"T12:00:00Z").getUTCDay()))d=add(d,-1);return d};
+for(let month=0;month<6;month++){
+ const ym=new Date(Date.UTC(2026,11+month,1)).toISOString().slice(0,7);
+ const last=new Date(Date.UTC(2026,12+month,0)).toISOString().slice(0,10);
+ for(const [part,date] of [["Аванс",ym+"-15"],["Окончательный расчёт",last]]){
+  ops.push({id:"SAL-"+ym+"-"+part,kind:"out",date:previousWeekday(date),amount:420000,name:"Заработная плата · "+part,party:"Сотрудники",mandatory:true,category:"Персонал"});
+ }
+ ops.push({id:"TAX-"+ym,kind:"out",date:previousWeekday(ym+"-12"),amount:215000,name:"Налоги и взносы",party:"Бюджет",mandatory:true,category:"Налоги"});
+}
+// Исключаем точные дубли в демонстрационных операциях до расчёта остатков.
+const seenOps=new Set();
+for(let i=ops.length-1;i>=0;i--){const o=ops[i],key=[o.kind,o.date,o.name,o.party,o.amount].join("|");if(seenOps.has(key))ops.splice(i,1);else seenOps.add(key)}
 let days=90,page="overview",filter="all",scenario={receipt:"D4",receiptShift:0,expense:ops.find(o=>o.kind==="out"&&!o.mandatory).id,expenseShift:0,saving:0};
 const $=id=>document.getElementById(id);
 function currentOps(sc=false){return ops.map(o=>{if(!sc)return o;let date=o.date,amount=o.amount;if(o.kind==="in"&&o.contract===scenario.receipt)date=add(date,scenario.receiptShift);if(o.kind==="out"&&o.id===scenario.expense)date=add(date,scenario.expenseShift);if(o.kind==="out"&&!o.mandatory)amount=Math.round(amount*(1-scenario.saving/100));return {...o,date,amount}})}
