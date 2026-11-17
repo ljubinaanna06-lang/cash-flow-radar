@@ -112,7 +112,7 @@ function saveOperation(e){
  e.preventDefault();const form=$("operationForm");if(!form.reportValidity())return;
  const id=$("operationId").value,old=id?ops.find(o=>o.id===id):null;
  const date=$("operationDate").value,amount=Number($("operationAmount").value),name=$("operationName").value.trim(),party=$("operationParty").value.trim();
- if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isSafeInteger(amount)||amount<=0||!name||!party){alert("Проверьте дату, сумму и обязательные поля.");return}
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(date)){alert("Некорректная дата. Выберите дату в календаре.");return}if(!Number.isSafeInteger(amount)||amount<=0){alert("Сумма должна быть положительным целым числом.");return}if(!name){alert("Заполните наименование операции.");return}if(!party){alert("Заполните контрагента.");return}
  const operation={...(old||{}),id:old?.id||"USER-"+Date.now()+"-"+Math.random().toString(36).slice(2,8),kind:$("operationKind").value,date,amount,name,party,mandatory:$("operationMandatory").checked};
  if(operation.kind==="in")operation.mandatory=false;
  if(old)ops.splice(ops.indexOf(old),1,operation);else ops.push(operation);
