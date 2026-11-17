@@ -19,7 +19,7 @@ else if(type===3){name="Проценты по кредиту";party="Банк";a
 else if(type===4){name="Материалы для ремонта";party=suppliers[i%6];amount=350000+(i%4)*65000;category="Материалы"}
 else if(type===5){name="Комплектующие";party=suppliers[i%6];amount=260000+(i%3)*70000;category="Материалы"}
 else if(type===6){name="Субподрядные работы";party=suppliers[i%6];amount=280000;category="Субподряд"}
-else if(type===7){name="Логистика";party=suppliers[5];amount=85000;category="Логистика";mandatory=false}
+else if(type===7){name="Логистика";party=suppliers[5];amount=85000;category="Логистика";mandatory=true}
 else{name="Административные расходы";party="Администрация";amount=70000;category="Административные";mandatory=false}
 ops.push({id:"E"+i,kind:"out",date:day,amount,name,party,mandatory,category})}
 // Регулярные платежи демонстрационной модели: зарплата дважды в месяц,
